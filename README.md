@@ -3,26 +3,27 @@
 Seasonal distribution of systematic cetacean sighting records in the Hawaiian
 Islands EEZ, from NOAA PIFSC shipboard surveys, 2006–2017.
 
-![Final frame](outputs/figures/still_september.png)
+![September, the densest month](outputs/figures/still_september.png)
 
-A twelve-frame animation, January to December, of every sighting in the public
-WinCruz record that could support density estimation. Bathymetry underneath,
-EEZ boundary outlined, the species seen that month shown down the right.
+A twelve-frame animation, January to December, of every systematic
+species-identified sighting in the public WinCruz record. Bathymetry
+underneath, EEZ boundary outlined, the species seen that month down the right.
 
 Full animation: [`outputs/hawaii_cetacean_seasonal.mp4`](outputs/hawaii_cetacean_seasonal.mp4)
+Written report: [theophilemt92.github.io/hawaii-cetacean-seasonality](https://theophilemt92.github.io/hawaii-cetacean-seasonality)
 
 ## What the map shows, and what it does not
 
-It shows **sighting records**, not animals. The public dataset contains
-sightings only — there is no trackline or effort file — so the map cannot say
-where cetaceans are, only where and when a sighting was written down.
+It shows **sighting records, not animals**. The public dataset contains
+sightings only — there is no trackline or effort file — so the map describes
+where observations were written down, not where cetaceans are.
 
-Blank months are **months with no systematic line-transect effort**, which is
-not the same as months with no survey activity, and certainly not months with
-no animals. March and April both carry non-systematic records; December carries
-none at all.
+Blank months are months with **no systematic line-transect effort**. That is
+not the same as no survey activity, and certainly not no animals. March and
+April both carry records under other effort types; December carries none at
+all.
 
-## From 1,492 records to 361 usable sightings
+## From 1,492 records to 370 sightings
 
 | step | n |
 |---|---|
@@ -30,15 +31,15 @@ none at all.
 | cetaceans (excludes turtles, monk seal) | 1,491 |
 | identified to species | 1,042 |
 | Hawaiian Islands EEZ | 882 |
-| systematic effort | 370 |
-| with a group-size estimate | **361** |
+| systematic effort | **370** |
 
-Three quarters of the file falls away before the data can carry a density
-estimate. The largest remaining sample is **sperm whale at 56 sightings**,
-across 24 species and twelve years. The conventional minimum for fitting a
-species-specific detection function is 60–80 detections, so on this public
-record not one species clears the bar alone — which is why detection functions
-in practice are pooled across species by size class or guild.
+370 sightings across **24 species** over twelve years, in an EEZ of
+2,474,715 km².
+
+Group size is deliberately *not* required. The map draws one point per
+sighting regardless of how many animals were in the group, so a missing
+group-size estimate is no reason to drop a record. (It would be, for a density
+estimate — different question, different filter.)
 
 ## The trap in `EffortType`
 
@@ -47,33 +48,36 @@ From the InPort entity metadata:
 > Did the sighting occur when the survey effort was systematic (**S**),
 > non-systematic (**N**), fine-scale (**F**), or off (**O**)
 
-`O` is **off**-effort. It reads like "on". Only `S` is line-transect effort and
-only `S` belongs in a density analysis. Filtering on `O` yields 355 sightings
-that look plausible and are the wrong ones.
+`O` is **off**-effort. It reads like "on". Only `S` is planned line-transect
+effort with observers on watch, and only `S` is comparable between months.
+Filtering on `O` yields 355 plausible-looking sightings that are the wrong
+ones.
 
 ## Seasonal coverage
 
-Systematic sightings in the Hawaiian Islands EEZ, by month, 2006–2017 pooled:
+The record is heavily skewed toward the second half of the year. **September
+alone holds 117 of the 370 sightings — a third of twelve years.** March, April
+and December hold none.
 
-| Jan | Feb | Mar | Apr | May | Jun | Jul | Aug | Sep | Oct | Nov | Dec |
-|---|---|---|---|---|---|---|---|---|---|---|---|
-| 1 | 46 | 0 | 0 | 57 | 6 | 35 | 34 | **114** | 46 | 22 | 0 |
+Every February record comes from a **single survey in 2009**. That is also the
+survey the existing PIFSC predictive density model for Hawaiian humpback whales
+was built from.
 
-September alone holds 31% of the record. July–November holds 70%. The winter
-record is essentially one February — which is worth knowing, given that the
-existing PIFSC humpback density model for this EEZ was built from a February
-2009 survey, and that a new winter survey is the basis of current density
-work.
+The seasonal gap is a known one rather than an oversight: NOAA's winter survey
+(WHICEAS) exists specifically to cover
+[a time of year the earlier surveys did not](https://www.fisheries.noaa.gov/feature-story/why-whiceas-winter-hawaiian-islands-cetacean-and-ecosystem-assessment-survey),
+when humpbacks migrate into Hawaiian waters. HICEAS surveys themselves run
+July–December.
 
-`data/derived/effort_by_month.csv` gives the same breakdown across all four
-effort types, before the species and group-size filters.
+`outputs/effort_by_month.csv` gives the full month × effort-type breakdown,
+before the species filter.
 
 ## Reproducing
 
 ```r
 install.packages(c("dplyr", "readr", "sf", "here", "ggplot2", "terra",
                    "marmap", "rphylopic", "av", "purrr", "tidyr",
-                   "stringr", "lubridate", "scales"))
+                   "stringr", "lubridate", "scales", "knitr"))
 
 source("R/01_prepare_data.R")   # downloads, filters, writes data/derived/
 source("R/02_seasonal_map.R")   # renders outputs/hawaii_cetacean_seasonal.mp4
@@ -85,19 +89,23 @@ redistributed copy. Download **EEZ v12** from
 [marineregions.org/downloads.php](https://www.marineregions.org/downloads.php)
 and unpack it to `data/raw/World_EEZ_v12_20231025/`.
 
+`data/` is not tracked: the raw archive is re-downloadable, the derived `.rds`
+files are regenerated by `01`, and the EEZ shapefile is 156 MB, over GitHub's
+limit.
+
 ### Two things that will bite you
 
 The Hawaiian Islands EEZ **crosses the antimeridian**, so its bounding box in
 plain −180/180 spans the entire globe and eight sightings sit east of the line.
 Everything here works in 0–360. The source polygon is also split at 180°, and
-that seam survives `st_shift_longitude()` as an interior line that
-`geom_path()` will happily draw across the map; `01` strips it.
+that seam survives `st_shift_longitude()` as an interior line which
+`geom_path()` will happily draw across the map; `02` strips it.
 
 `marmap::getNOAA.bathy(antimeridian = TRUE)` stitches two separately fetched
 halves with **different cell sizes** (0.06694° and 0.06793°, plus a 0.035°
 sliver at the join). `geom_raster()` assumes a regular grid, so the mismatch
 renders as vertical striping across the whole panel. `02` resamples onto a
-single regular 0.07° grid, and asserts regularity afterwards.
+single regular 0.07° grid and asserts regularity afterwards.
 
 ## Attribution
 

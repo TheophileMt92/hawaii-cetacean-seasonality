@@ -60,22 +60,23 @@ d3 <- d |>
 # EffortType, per the InPort entity metadata: systematic (S), non-systematic
 # (N), fine-scale (F), off (O). Only S is line-transect effort. "O" looks like
 # "on" and is not.
+# Group size is required for density estimation, not for a sightings map — one
+# dot is drawn per sighting regardless of how many animals were in the group.
 keep <- with(d3, is_cetacean & is_identified &
-               EEZ %in% "Hawaii" & EffortType %in% "S" & !is.na(best))
+               EEZ %in% "Hawaii" & EffortType %in% "S")
 
 funnel <- tibble::tibble(
   step = c("all records", "cetaceans", "identified to species",
-           "Hawaii EEZ", "systematic effort", "with group size"),
+           "Hawaiian Islands EEZ", "systematic effort"),
   n = c(
     nrow(d3),
     sum(d3$is_cetacean),
     sum(d3$is_cetacean & d3$is_identified),
     sum(d3$is_cetacean & d3$is_identified & d3$EEZ %in% "Hawaii"),
-    sum(d3$is_cetacean & d3$is_identified & d3$EEZ %in% "Hawaii" &
-          d3$EffortType %in% "S"),
     sum(keep)
   )
 )
+
 print(funnel)
 
 usable <- filter(d3, keep)
@@ -116,5 +117,5 @@ print(lookup, n = 30)
 saveRDS(usable, here("data", "derived", "usable.rds"))
 saveRDS(hi_eez, here("data", "derived", "hi_eez.rds"))
 saveRDS(lookup, here("data", "derived", "lookup.rds"))
-write_csv(funnel,          here("data", "derived", "funnel.csv"))
-write_csv(effort_by_month, here("data", "derived", "effort_by_month.csv"))
+write_csv(funnel,          here("outputs", "funnel.csv"))
+write_csv(effort_by_month, here("outputs", "effort_by_month.csv"))

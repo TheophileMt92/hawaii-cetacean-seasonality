@@ -954,8 +954,8 @@ margin: 1.5rem auto;
 <span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">source</span>(<span class="fu">here</span>(<span class="st">&quot;R&quot;</span>, <span class="st">&quot;01_prepare_data.R&quot;</span>))</span>
 <span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>usable <span class="ot">&lt;-</span> <span class="fu">readRDS</span>(<span class="fu">here</span>(<span class="st">&quot;data&quot;</span>, <span class="st">&quot;derived&quot;</span>, <span class="st">&quot;usable.rds&quot;</span>))</span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>funnel <span class="ot">&lt;-</span> readr<span class="sc">::</span><span class="fu">read_csv</span>(<span class="fu">here</span>(<span class="st">&quot;data&quot;</span>, <span class="st">&quot;derived&quot;</span>, <span class="st">&quot;funnel.csv&quot;</span>))</span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>by_mon <span class="ot">&lt;-</span> readr<span class="sc">::</span><span class="fu">read_csv</span>(<span class="fu">here</span>(<span class="st">&quot;data&quot;</span>, <span class="st">&quot;derived&quot;</span>, <span class="st">&quot;effort_by_month.csv&quot;</span>))</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>funnel <span class="ot">&lt;-</span> readr<span class="sc">::</span><span class="fu">read_csv</span>(<span class="fu">here</span>(<span class="st">&quot;outputs&quot;</span>, <span class="st">&quot;funnel.csv&quot;</span>))</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>by_mon <span class="ot">&lt;-</span> readr<span class="sc">::</span><span class="fu">read_csv</span>(<span class="fu">here</span>(<span class="st">&quot;outputs&quot;</span>, <span class="st">&quot;effort_by_month.csv&quot;</span>))</span>
 <span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Monthly totals with the empty months present, so they can be named in prose.</span></span>
 <span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>mon <span class="ot">&lt;-</span> tibble<span class="sc">::</span><span class="fu">tibble</span>(<span class="at">month =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">12</span>) <span class="sc">|&gt;</span></span>
@@ -1027,122 +1027,143 @@ margin: 1.5rem auto;
 <td style="text-align: right;">1,042</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">Hawaii EEZ</td>
+<td style="text-align: left;">Hawaiian Islands EEZ</td>
 <td style="text-align: right;">882</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">systematic effort</td>
 <td style="text-align: right;">370</td>
 </tr>
-<tr class="even">
-<td style="text-align: left;">with group size</td>
-<td style="text-align: right;">361</td>
-</tr>
 </tbody>
 </table>
 </div>
 </div>
-<p>361 sightings across 24 species remain. Group size was deliberately <em>not</em> required: the map draws one point per sighting regardless of how many animals were in the group, so a missing group-size estimate is no reason to drop a record here.</p>
+<p>370 sightings across 24 species remain. Group size was deliberately <em>not</em> required: the map draws one point per sighting regardless of how many animals were in the group, so a missing group-size estimate is no reason to drop a record here.</p>
 <h2 id="seasonal-coverage" class="anchored">Seasonal coverage</h2>
 <div class="cell">
 <details class="code-fold">
 <summary>Sightings by month and effort type, Hawaiian Islands EEZ</summary>
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">kable</span>(by_mon, <span class="at">format.args =</span> <span class="fu">list</span>(<span class="at">big.mark =</span> <span class="st">&quot;,&quot;</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>by_mon <span class="sc">|&gt;</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">right_join</span>(tibble<span class="sc">::</span><span class="fu">tibble</span>(<span class="at">month =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">12</span>), <span class="at">by =</span> <span class="st">&quot;month&quot;</span>) <span class="sc">|&gt;</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(month) <span class="sc">|&gt;</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="fu">across</span>(<span class="fu">where</span>(is.numeric) <span class="sc">&amp;</span> <span class="sc">!</span>month, <span class="sc">~</span> tidyr<span class="sc">::</span><span class="fu">replace_na</span>(.x, <span class="dv">0</span>)),</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>         <span class="at">Month =</span> month.name[month]) <span class="sc">|&gt;</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(Month,</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>         <span class="st">`</span><span class="at">Systematic (S)</span><span class="st">`</span>     <span class="ot">=</span> S,</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>         <span class="st">`</span><span class="at">Non-systematic (N)</span><span class="st">`</span> <span class="ot">=</span> N,</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>         <span class="st">`</span><span class="at">Fine-scale (F)</span><span class="st">`</span>     <span class="ot">=</span> F,</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>         <span class="st">`</span><span class="at">Off-effort (O)</span><span class="st">`</span>     <span class="ot">=</span> O) <span class="sc">|&gt;</span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable</span>(<span class="at">format.args =</span> <span class="fu">list</span>(<span class="at">big.mark =</span> <span class="st">&quot;,&quot;</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
 <table class="caption-top">
+<caption>Effort types: systematic (S) is planned line-transect effort with observers on watch; non-systematic (N) and fine-scale (F) are other on-water modes; off-effort (O) is transiting or closing on a group. Only S is comparable between months.</caption>
+<colgroup>
+<col style="width: 13%">
+<col style="width: 20%">
+<col style="width: 25%">
+<col style="width: 20%">
+<col style="width: 20%">
+</colgroup>
 <thead>
 <tr class="header">
-<th style="text-align: right;">month</th>
-<th style="text-align: right;">S</th>
-<th style="text-align: right;">N</th>
-<th style="text-align: right;">O</th>
-<th style="text-align: right;">F</th>
+<th style="text-align: left;">Month</th>
+<th style="text-align: right;">Systematic (S)</th>
+<th style="text-align: right;">Non-systematic (N)</th>
+<th style="text-align: right;">Fine-scale (F)</th>
+<th style="text-align: right;">Off-effort (O)</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td style="text-align: right;">1</td>
+<td style="text-align: left;">January</td>
 <td style="text-align: right;">1</td>
 <td style="text-align: right;">0</td>
 <td style="text-align: right;">0</td>
 <td style="text-align: right;">0</td>
 </tr>
 <tr class="even">
-<td style="text-align: right;">2</td>
+<td style="text-align: left;">February</td>
 <td style="text-align: right;">59</td>
 <td style="text-align: right;">42</td>
-<td style="text-align: right;">17</td>
 <td style="text-align: right;">0</td>
+<td style="text-align: right;">17</td>
 </tr>
 <tr class="odd">
-<td style="text-align: right;">3</td>
+<td style="text-align: left;">March</td>
 <td style="text-align: right;">0</td>
 <td style="text-align: right;">10</td>
-<td style="text-align: right;">1</td>
 <td style="text-align: right;">0</td>
+<td style="text-align: right;">1</td>
 </tr>
 <tr class="even">
-<td style="text-align: right;">4</td>
+<td style="text-align: left;">April</td>
 <td style="text-align: right;">0</td>
 <td style="text-align: right;">38</td>
-<td style="text-align: right;">16</td>
 <td style="text-align: right;">0</td>
+<td style="text-align: right;">16</td>
 </tr>
 <tr class="odd">
-<td style="text-align: right;">5</td>
+<td style="text-align: left;">May</td>
 <td style="text-align: right;">75</td>
 <td style="text-align: right;">12</td>
-<td style="text-align: right;">11</td>
 <td style="text-align: right;">0</td>
+<td style="text-align: right;">11</td>
 </tr>
 <tr class="even">
-<td style="text-align: right;">6</td>
+<td style="text-align: left;">June</td>
 <td style="text-align: right;">6</td>
 <td style="text-align: right;">3</td>
-<td style="text-align: right;">5</td>
 <td style="text-align: right;">0</td>
+<td style="text-align: right;">5</td>
 </tr>
 <tr class="odd">
-<td style="text-align: right;">7</td>
+<td style="text-align: left;">July</td>
 <td style="text-align: right;">48</td>
 <td style="text-align: right;">114</td>
-<td style="text-align: right;">76</td>
 <td style="text-align: right;">7</td>
+<td style="text-align: right;">76</td>
 </tr>
 <tr class="even">
-<td style="text-align: right;">8</td>
+<td style="text-align: left;">August</td>
 <td style="text-align: right;">56</td>
 <td style="text-align: right;">30</td>
-<td style="text-align: right;">18</td>
 <td style="text-align: right;">4</td>
+<td style="text-align: right;">18</td>
 </tr>
 <tr class="odd">
-<td style="text-align: right;">9</td>
+<td style="text-align: left;">September</td>
 <td style="text-align: right;">171</td>
 <td style="text-align: right;">34</td>
-<td style="text-align: right;">82</td>
 <td style="text-align: right;">8</td>
+<td style="text-align: right;">82</td>
 </tr>
 <tr class="even">
-<td style="text-align: right;">10</td>
+<td style="text-align: left;">October</td>
 <td style="text-align: right;">68</td>
 <td style="text-align: right;">100</td>
-<td style="text-align: right;">48</td>
 <td style="text-align: right;">2</td>
+<td style="text-align: right;">48</td>
 </tr>
 <tr class="odd">
-<td style="text-align: right;">11</td>
+<td style="text-align: left;">November</td>
 <td style="text-align: right;">47</td>
 <td style="text-align: right;">28</td>
+<td style="text-align: right;">0</td>
 <td style="text-align: right;">16</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">December</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
 <td style="text-align: right;">0</td>
 </tr>
 </tbody>
 </table>
 </div>
 </div>
-<p>The record is heavily skewed toward the second half of the year. <strong>September</strong> alone holds 114 of the 361 systematic sightings.</p>
+<p>The record is heavily skewed toward the second half of the year. <strong>September</strong> alone holds 117 of the 370 systematic sightings.</p>
 <p>March, April, and December contain none at all.</p>
 <p>The distinction between effort types earns its keep here. March and April are empty of <em>systematic</em> records, but both carry sightings under other effort types — vessels were present, they were simply not running line-transect effort. December is the only month with no records of any kind.</p>
 <p>So the accurate statement is not that three months went unsurveyed. It is that systematic effort is concentrated in the second half of the year, and that the winter record rests almost entirely on a single February.</p>
