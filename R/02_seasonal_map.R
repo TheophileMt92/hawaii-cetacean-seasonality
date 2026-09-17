@@ -196,8 +196,7 @@ frame_plot <- function(m) {
                 xlim = XLIM, ylim = YLIM, expand = FALSE) +
     labs(
       title    = "Seasonal distribution of cetacean sightings, Hawaiian Islands EEZ",
-      subtitle = "Systematic shipboard survey records, 2006–2017, pooled by month.\nBlank months had no systematic line-transect effort, not necessarily no animals.",
-      caption  = CAPTION, x = NULL, y = NULL
+      subtitle = "Systematic shipboard survey records, 2009–2017, pooled by month.\nBlank months had no systematic line-transect effort, not necessarily no animals.",      caption  = CAPTION, x = NULL, y = NULL
     ) +
     theme_void(base_size = 12) +
     theme(
