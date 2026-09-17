@@ -1,6 +1,6 @@
 ---
 title: "Seasonal cetacean sighting records in the Hawaiian Islands EEZ"
-subtitle: "What twelve years of systematic shipboard survey records do and do not show"
+subtitle: "What nine survey cruises between 2009 and 2017 do and do not show"
 author: "Théophile L. Mouton"
 date: today
 format:
@@ -148,6 +148,25 @@ So the accurate statement is not that three months went unsurveyed. It is that
 systematic effort is concentrated in the second half of the year, and that the
 winter record rests almost entirely on a single February.
 
+## Cruises
+
+```{r cruises}
+#| code-summary: "Sightings by cruise — the unit the seasonal pattern actually reflects"
+usable |>
+  count(CruiseID, name = "Sightings") |>
+  arrange(CruiseID) |>
+  kable(col.names = c("Cruise", "Sightings"))
+```
+
+Nine cruises, five years. The monthly pattern above is better read as a record
+of when these cruises sailed than as a seasonal schedule: 2010 and 2017 — both
+HICEAS years — contribute 145 and 101 sightings respectively, two-thirds of the
+total, and every cruise working in September belongs to one of them. September's
+apparent peak is the HICEAS field season sampled twice.
+
+Two of the nine are transits rather than surveys, contributing six sightings in
+total. One of those six is the entire January record.
+
 ## Building the map
 
 Two things about this region caused more trouble than the data did.
@@ -183,6 +202,11 @@ species-labelled map and is not neutral.
 **Sightings are not corrected for detectability.** Sea state, group size and
 species behaviour all affect whether an animal present is an animal seen, and
 none of that is accounted for in a plot of raw records.
+
+**Nine cruises, not twelve years.** The record spans 2009–2017 but comprises
+nine cruises in five years, two of them transits. Any monthly or annual
+comparison is a comparison between a handful of voyages, and a month's total can
+rest on a single one — January's does.
 
 ## Data and attribution
 

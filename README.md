@@ -1,7 +1,7 @@
 # hawaii-cetacean-seasonality
 
 Seasonal distribution of systematic cetacean sighting records in the Hawaiian
-Islands EEZ, from NOAA PIFSC shipboard surveys, 2006–2017.
+Islands EEZ, from NOAA PIFSC shipboard surveys, 2009–2017.
 
 ![September, the densest month](outputs/figures/still_september.png)
 
@@ -33,8 +33,8 @@ all.
 | Hawaiian Islands EEZ | 882 |
 | systematic effort | **370** |
 
-370 sightings across **24 species** over twelve years, in an EEZ of
-2,474,715 km².
+370 sightings across **24 species**, from nine cruises between 2009 and 2017,
+in an EEZ of 2,474,715 km².
 
 Group size is deliberately *not* required. The map draws one point per
 sighting regardless of how many animals were in the group, so a missing
@@ -55,22 +55,29 @@ ones.
 
 ## Seasonal coverage
 
-The record is heavily skewed toward the second half of the year. **September
-alone holds 117 of the 370 sightings — a third of twelve years.** March, April
-and December hold none.
+September holds 117 of the 370 sightings, nearly a third. March, April and
+December hold none.
 
-Every February record comes from a **single survey in 2009**. That is also the
-survey the existing PIFSC predictive density model for Hawaiian humpback whales
-was built from.
+But the meaningful unit is the cruise, not the year. These 370 sightings come
+from **nine cruises across five years** (2009, 2010, 2013, 2016, 2017), and two
+of the nine are Guam–Hawaii transits rather than dedicated surveys —
+contributing six sightings between them, one of which is the entire January
+record.
 
-The seasonal gap is a known one rather than an oversight: NOAA's winter survey
+Two HICEAS years dominate: **2010 contributes 145 sightings and 2017 another
+101, two-thirds of the record between them.** All four cruises that were
+working in September belong to those two years. So September's peak is not a
+seasonal signal — it is the HICEAS field season, which runs July–December,
+sampled twice.
+
+Every February record comes from a **single survey in 2009**, the same survey
+the existing PIFSC predictive density model for Hawaiian humpback whales was
+built from.
+
+The winter gap is a known one rather than an oversight: NOAA's winter survey
 (WHICEAS) exists specifically to cover
 [a time of year the earlier surveys did not](https://www.fisheries.noaa.gov/feature-story/why-whiceas-winter-hawaiian-islands-cetacean-and-ecosystem-assessment-survey),
-when humpbacks migrate into Hawaiian waters. HICEAS surveys themselves run
-July–December.
-
-`outputs/effort_by_month.csv` gives the full month × effort-type breakdown,
-before the species filter.
+when humpbacks migrate into Hawaiian waters.
 
 ## Reproducing
 
