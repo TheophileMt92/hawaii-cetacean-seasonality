@@ -1,0 +1,194 @@
+---
+title: "Seasonal cetacean sighting records in the Hawaiian Islands EEZ"
+subtitle: "What twelve years of systematic shipboard survey records do and do not show"
+author: "Théophile L. Mouton"
+date: today
+format:
+  html:
+    output-file: index.html
+    embed-resources: true
+    css: Quarto_template/custom.css
+    include-before-body: Quarto_template/header.html
+    include-after-body: Quarto_template/footer.html
+    theme: none
+    toc: true
+    toc-depth: 2
+    code-fold: true
+    code-summary: "Show code"
+    fig-align: center
+execute:
+  echo: true
+  message: false
+  warning: false
+---
+
+```{r setup}
+#| output: false
+#| code-summary: "readRDS() — load prepared objects, running 01_prepare_data.R if needed"
+library(dplyr); library(here); library(knitr)
+
+if (!file.exists(here("data", "derived", "usable.rds")))
+  source(here("R", "01_prepare_data.R"))
+
+usable <- readRDS(here("data", "derived", "usable.rds"))
+funnel <- readr::read_csv(here("data", "derived", "funnel.csv"))
+by_mon <- readr::read_csv(here("data", "derived", "effort_by_month.csv"))
+
+# Monthly totals with the empty months present, so they can be named in prose.
+mon <- tibble::tibble(month = 1:12) |>
+  left_join(count(usable, month), by = "month") |>
+  mutate(n = tidyr::replace_na(n, 0),
+         name = month.name[month])
+
+peak     <- slice_max(mon, n, n = 1)
+empty    <- filter(mon, n == 0)$name
+n_usable <- nrow(usable)
+n_spp    <- n_distinct(usable$CommonName)
+```
+
+This is a companion note to an animated map of cetacean sighting records in the
+Hawaiian Islands Exclusive Economic Zone, built from NOAA's public
+[WinCruz sighting archive](https://www.fisheries.noaa.gov/inport/item/18141).
+It sets out where the data came from, what was excluded and why, what the
+seasonal pattern is, and — the part that matters most — what the map cannot be
+read as saying.
+
+## The map
+
+```{r figure}
+#| code-summary: "The seasonal animation (rendered by R/02_seasonal_map.R)"
+#| fig-cap: "September, the densest month. The full twelve-month animation is at `outputs/hawaii_cetacean_seasonal.mp4`."
+include_graphics(here("outputs", "figures", "still_september.png"))
+```
+
+Twelve frames, January to December, pooling all years. Each amber point is one
+sighting. Bathymetry is underneath, the EEZ boundary is outlined, and the
+species recorded that month are named down the right-hand side.
+
+Plotting code is in `R/02_seasonal_map.R` rather than inline, since it runs to a
+couple of hundred lines and renders 240 frames.
+
+## What a WinCruz sighting record is
+
+Each row is one group of one species, seen once, from a ship. The archive
+carries the date, the ship's position at the start of the sighting, species,
+group-size estimates, the EEZ and PIFSC region, what cued the observation,
+whether the sighting was mixed-species, and the NMFS permit it was collected
+under.
+
+One absence shapes everything below: **there is no effort or trackline
+information**. The archive contains sightings and nothing else. It cannot say
+where the ship went, how far it steamed, or how long observers were searching.
+
+That single fact is why this note is careful about the word "distribution".
+
+## Filtering
+
+Three exclusions, in order.
+
+**Non-cetaceans.** `SpeciesCode` is numeric for cetaceans and alphabetic for sea
+turtles (`CC`, `CM`, `DC`, `EI`) and Hawaiian monk seal (`MS`). One record in
+the archive is not a cetacean.
+
+**Records not identified to species.** `Unid. Dolphin`, `Unid. Beaked whale`,
+`Mesoplodon sp.`, `Sei/Bryde's whale` and similar are records of *a cetacean*,
+not of a species. A map that names species can only draw records that name one.
+
+**Effort type.** From the InPort entity metadata:
+
+> Did the sighting occur when the survey effort was systematic (S),
+> non-systematic (N), fine-scale (F), or off (O)
+
+Only `S` denotes systematic line-transect effort, where the ship is running a
+planned track with observers on watch. The rest happen while transiting,
+closing on a group, or otherwise not surveying — real sightings, but not
+comparable between months or places. Note that `O` means **off**-effort; it
+reads like "on", and filtering on it silently selects the wrong records.
+
+```{r funnel}
+#| code-summary: "The exclusion sequence, in counts"
+kable(funnel, col.names = c("Step", "Records"), format.args = list(big.mark = ","))
+```
+
+`r format(n_usable, big.mark = ",")` sightings across `r n_spp` species remain.
+Group size was deliberately *not* required: the map draws one point per
+sighting regardless of how many animals were in the group, so a missing
+group-size estimate is no reason to drop a record here.
+
+## Seasonal coverage
+
+```{r month-table}
+#| code-summary: "Sightings by month and effort type, Hawaiian Islands EEZ"
+kable(by_mon, format.args = list(big.mark = ","))
+```
+
+The record is heavily skewed toward the second half of the year.
+**`r peak$name`** alone holds `r peak$n` of the `r format(n_usable, big.mark = ",")`
+systematic sightings.
+
+`r knitr::combine_words(empty)` contain none at all.
+
+The distinction between effort types earns its keep here. March and April are
+empty of *systematic* records, but both carry sightings under other effort
+types — vessels were present, they were simply not running line-transect
+effort. December is the only month with no records of any kind.
+
+So the accurate statement is not that three months went unsurveyed. It is that
+systematic effort is concentrated in the second half of the year, and that the
+winter record rests almost entirely on a single February.
+
+## Building the map
+
+Two things about this region caused more trouble than the data did.
+
+**The EEZ crosses the antimeridian.** Its bounding box in conventional
+−180/180 longitude spans the entire globe, and eight sightings sit east of the
+line. Everything is handled in 0–360 instead. The source polygon is also split
+at 180°, and that seam survives the shift as an interior line which `geom_path`
+will happily draw straight across the map; it is stripped before plotting.
+
+**The bathymetry arrives on two different grids.** `marmap`'s antimeridian mode
+fetches the halves either side of 180° separately, and they come back with
+different cell sizes — 0.06694° and 0.06793°, plus a 0.035° sliver at the join.
+`geom_raster` assumes a regular grid and draws every cell at one nominal width,
+so the mismatch renders as vertical striping across the whole panel. The data is
+resampled onto a single regular 0.07° grid, with an assertion afterwards so a
+future regression fails loudly rather than quietly.
+
+## What this map does not show
+
+**It shows records, not animals.** With no effort data in the archive, the
+points describe where observations were written down. Reading spatial pattern
+from them means reading wherever the ship happened to go.
+
+**Blank months mean no systematic effort**, not an absence of animals — and in
+two of the three cases, not even an absence of survey activity.
+
+**Species identification varies in resolution.** Around 30% of the archive is
+cetaceans not identified to species, and those records are unlikely to be
+distributed evenly across taxa. Excluding them is necessary for a
+species-labelled map and is not neutral.
+
+**Sightings are not corrected for detectability.** Sea state, group size and
+species behaviour all affect whether an animal present is an animal seen, and
+none of that is accounted for in a plot of raw records.
+
+## Data and attribution
+
+**Sightings** — NOAA Pacific Islands Fisheries Science Center, Cetacean Research
+Program. *Shipboard Cetacean Surveys — Visual Surveys — WinCruz Sighting
+Records*, [InPort 18141](https://www.fisheries.noaa.gov/inport/item/18141).
+Collected under NMFS permits `r paste(sort(unique(usable$Permit)), collapse = ", ")`.
+Citing the permit numbers is a condition of use.
+
+**Bathymetry** — NOAA ETOPO, via [marmap](https://cran.r-project.org/package=marmap).
+
+**EEZ boundary** — Flanders Marine Institute, *Maritime Boundaries Geodatabase*
+v12 (2023), [marineregions.org](https://www.marineregions.org/), CC BY 4.0.
+
+**Silhouettes** — [PhyloPic](https://www.phylopic.org/) via
+[rphylopic](https://cran.r-project.org/package=rphylopic); per-image
+contributors and licences in `outputs/phylopic_credits.csv`. Three species have
+no PhyloPic image and use a genus- or family-level stand-in.
+
+Code: [github.com/TheophileMt92/hawaii-cetacean-seasonality](https://github.com/TheophileMt92/hawaii-cetacean-seasonality)

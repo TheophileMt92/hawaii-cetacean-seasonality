@@ -212,14 +212,16 @@ frame_plot <- function(m) {
 }
 
 # ── check before rendering 240 frames ────────────────────────────────────────
-ggsave("test_sep.png", frame_plot(9), width = 14.0, height = 8.2, dpi = 100)
-ggsave("test_mar.png", frame_plot(3), width = 14.0, height = 8.2, dpi = 100)
+ggsave(here("outputs", "figures", "test_sep.png"), frame_plot(9),
+       width = 14.0, height = 8.2, dpi = 100)
+ggsave(here("outputs", "figures", "still_september.png"), frame_plot(9),
+       width = 14.0, height = 8.2, dpi = 100)
 
 # ── video ────────────────────────────────────────────────────────────────────
 frames <- rep(1:12, each = 20)   # ~1.3 s per month at 15 fps, ~16 s total
 
 invisible(av::av_capture_graphics(
   for (m in frames) print(frame_plot(m)),
-  output = "hawaii_cetacean_seasonal.mp4",
+  output = here("outputs", "hawaii_cetacean_seasonal.mp4"),
   width = 1400, height = 820, framerate = 15
 ))

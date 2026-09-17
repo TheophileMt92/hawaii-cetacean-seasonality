@@ -95,7 +95,7 @@ print(count(usable, CommonName, sort = TRUE), n = 40)
 
 # ── EEZ boundary ─────────────────────────────────────────────────────────────
 # Marine Regions EEZ v12, CC BY 4.0. Not redistributed here — see README.
-eez <- st_read(here("World_EEZ_v12_20231025", "eez_v12.shp"), quiet = TRUE)
+eez <- st_read(here("data", "raw", "World_EEZ_v12_20231025", "eez_v12.shp"), quiet = TRUE)
 hi_eez <- filter(eez, GEONAME == "United States Exclusive Economic Zone (Hawaii)")
 stopifnot(nrow(hi_eez) == 1)
 
